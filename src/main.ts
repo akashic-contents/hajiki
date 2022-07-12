@@ -17,6 +17,22 @@ const physics = new box2d.Box2D(worldProperty);
 /** おはじきを弾く力 */
 const power = 10;
 
+interface HajikiParameterObject {
+	/** 表示情報のパラメータ */
+	appear: {
+		width: number;
+		height: number;
+		cssColor?: string;
+	};
+	/** 物理定義 */
+	physics: {
+		/** 物理挙動 */
+		body: box2d.Box2DWeb.Dynamics.b2BodyDef;
+		/** 物理性質 */
+		fixture: box2d.Box2DWeb.Dynamics.b2FixtureDef;
+	};
+};
+
 /** おはじきのパラメータ */
 const hajikiParameter = {
 	appear: {
@@ -136,7 +152,7 @@ function randomPosition(): box2d.Box2DWeb.Common.Math.b2Vec2 {
  * @param {g.Scene} scene 描画を行うシーン
  * @param {Object} parameter 矩形の生成パラメータ
  */
-function createRect(scene: g.Scene, parameter: typeof wallParameter): box2d.EBody | null {
+function createRect(scene: g.Scene, parameter: HajikiParameterObject): box2d.EBody | null {
 	// 表示用の矩形（1m × 1m）を生成
 	const rect = new g.FilledRect({
 		scene: scene,
@@ -155,7 +171,7 @@ function createRect(scene: g.Scene, parameter: typeof wallParameter): box2d.EBod
  * @param {g.Scene} scene 描画を行うシーン
  * @param {Object} parameter 円の生成パラメータ
  */
-function createCircle(scene: g.Scene, parameter: typeof hajikiParameter): box2d.EBody {
+function createCircle(scene: g.Scene, parameter: HajikiParameterObject): box2d.EBody {
 	// 画像をまとめる空のエンティティを生成
 	const entity = new g.E({
 		scene: scene,
