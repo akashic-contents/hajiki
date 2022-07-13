@@ -34,7 +34,7 @@ interface HajikiParameterObject {
 };
 
 /** おはじきのパラメータ */
-const hajikiParameter = {
+const hajikiParameter: HajikiParameterObject = {
 	appear: {
 		width: 1.0 * worldProperty.scale,
 		height: 1.0 * worldProperty.scale
@@ -56,7 +56,7 @@ const hajikiParameter = {
 };
 
 /** 壁の生成パラメータ */
-const wallParameter = {
+const wallParameter: HajikiParameterObject = {
 	appear: {
 		width: 0.3 * worldProperty.scale,
 		height: g.game.height,
@@ -75,7 +75,7 @@ const wallParameter = {
 	}
 };
 /** 床・天井の生成パラメータ */
-const floorParameter = {
+const floorParameter: HajikiParameterObject = {
 	appear: {
 		width: g.game.width,
 		height: 0.3 * worldProperty.scale,
@@ -100,7 +100,7 @@ function main(): void {
 		assetIds: ["circle", "circle_touch", "arrow"]
 	});
 
-	scene.onLoad.add(function() {
+	scene.onLoad.add(() => {
 		// 壁を生成
 		createWall(scene);
 
@@ -109,7 +109,7 @@ function main(): void {
 			createHajiki(scene, randomPosition());
 		}
 
-		scene.onUpdate.add(function() {
+		scene.onUpdate.add(() => {
 			// 物理エンジンの世界をすすめる
 			// ※ step関数の引数は秒数なので、1フレーム分の時間（1.0 / g.game.fps）を指定する
 			physics.step(1.0 / g.game.fps);
@@ -205,12 +205,12 @@ function createCircle(scene: g.Scene, parameter: HajikiParameterObject): box2d.E
 
 	// タッチの有無で画像を切り替える
 	// タッチされたときにタッチ用の画像を表示
-	entity.onPointDown.add(function() {
+	entity.onPointDown.add(() => {
 		circle.hide();
 		circleTouch.show();
 	});
 	// タッチが解除されたときに通常時の画像を表示
-	entity.onPointUp.add(function() {
+	entity.onPointUp.add(() => {
 		circle.show();
 		circleTouch.hide();
 	});
