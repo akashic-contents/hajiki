@@ -150,7 +150,7 @@ function randomPosition(): box2d.Box2DWeb.Common.Math.b2Vec2 {
 /**
  * 衝突判定を持つ矩形を生成する
  * @param {g.Scene} scene 描画を行うシーン
- * @param {Object} parameter 矩形の生成パラメータ
+ * @param {HajikiParameterObject} parameter 矩形の生成パラメータ
  */
 function createRect(scene: g.Scene, parameter: HajikiParameterObject): box2d.EBody | null {
 	// 表示用の矩形（1m × 1m）を生成
@@ -169,7 +169,7 @@ function createRect(scene: g.Scene, parameter: HajikiParameterObject): box2d.EBo
 /**
  * 衝突判定を持つ円を生成する
  * @param {g.Scene} scene 描画を行うシーン
- * @param {Object} parameter 円の生成パラメータ
+ * @param {HajikiParameterObject} parameter 円の生成パラメータ
  */
 function createCircle(scene: g.Scene, parameter: HajikiParameterObject): box2d.EBody {
 	// 画像をまとめる空のエンティティを生成
