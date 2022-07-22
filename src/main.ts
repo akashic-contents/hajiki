@@ -1,98 +1,8 @@
-import * as box2d from "@akashic-extension/akashic-box2d";
-
-/** 2次元ベクトル */
-const b2Vec2 = box2d.Box2DWeb.Common.Math.b2Vec2;
-/** 2×2 の行列 */
-const b2Mat22 = box2d.Box2DWeb.Common.Math.b2Mat22;
-
-/** 物理世界のプロパティ */
-const worldProperty = {
-	gravity: [0.0, 0.0], // 重力の方向（m/s^2）
-	scale: 50, // スケール（pixel/m）
-	sleep: true // 停止した物体を演算対象としないかどうか
-};
-/** 物理エンジンの世界 */
-const physics = new box2d.Box2D(worldProperty);
+import type * as box2d from "@akashic-extension/akashic-box2d";
+import * as params from "./parameters";
 
 /** おはじきを弾く力 */
 const power = 10;
-
-interface HajikiParameterObject {
-	/** 表示情報のパラメータ */
-	appear: {
-		width: number;
-		height: number;
-		cssColor?: string;
-	};
-	/** 物理定義 */
-	physics: {
-		/** 物理挙動 */
-		body: box2d.Box2DWeb.Dynamics.b2BodyDef;
-		/** 物理性質 */
-		fixture: box2d.Box2DWeb.Dynamics.b2FixtureDef;
-	};
-};
-
-/** おはじきのパラメータ */
-const hajikiParameter: HajikiParameterObject = {
-	appear: {
-		width: 1.0 * worldProperty.scale,
-		height: 1.0 * worldProperty.scale
-	},
-	/** 物理定義 */
-	physics: {
-		/** 物理挙動 */
-		body: physics.createBodyDef({
-			type: box2d.BodyType.Dynamic // 自由に動ける物体
-		}),
-		/** 物理性質 */
-		fixture: physics.createFixtureDef({
-			density: 5.0, // 密度
-			friction: 1.0, // 摩擦係数
-			restitution: 0.999, // 反発係数
-			shape: physics.createCircleShape(1.0 * worldProperty.scale) // 衝突判定の形（直径 1m の円形）
-		})
-	}
-};
-
-/** 壁の生成パラメータ */
-const wallParameter: HajikiParameterObject = {
-	appear: {
-		width: 0.3 * worldProperty.scale,
-		height: g.game.height,
-		cssColor: "royalblue"
-	},
-	physics: {
-		body: physics.createBodyDef({
-			type: box2d.BodyType.Static // 固定されて動かない物体
-		}),
-		fixture: physics.createFixtureDef({
-			density: 1.0,
-			friction: 0.3,
-			restitution: 0.7,
-			shape: physics.createRectShape(0.3 * worldProperty.scale, g.game.height)
-		})
-	}
-};
-/** 床・天井の生成パラメータ */
-const floorParameter: HajikiParameterObject = {
-	appear: {
-		width: g.game.width,
-		height: 0.3 * worldProperty.scale,
-		cssColor: "royalblue"
-	},
-	physics: {
-		body: physics.createBodyDef({
-			type: box2d.BodyType.Static
-		}),
-		fixture: physics.createFixtureDef({
-			density: 1.0,
-			friction: 0.3,
-			restitution: 0.7,
-			shape: physics.createRectShape(g.game.width, 0.3 * worldProperty.scale)
-		})
-	}
-};
 
 function main(): void {
 	const scene = new g.Scene({
@@ -112,15 +22,15 @@ function main(): void {
 		scene.onUpdate.add(() => {
 			// 物理エンジンの世界をすすめる
 			// ※ step関数の引数は秒数なので、1フレーム分の時間（1.0 / g.game.fps）を指定する
-			physics.step(1.0 / g.game.fps);
+			params.physics.step(1.0 / g.game.fps);
 		});
 
 		let begin: box2d.Box2DWeb.Common.Math.b2Vec2;
 		scene.onPointDownCapture.add((event) => {
-			begin = new b2Vec2(event.point.x, event.point.y);
+			begin = new params.b2Vec2(event.point.x, event.point.y);
 		});
 		scene.onPointUpCapture.add((event) => {
-			const end = new b2Vec2(event.startDelta.x, event.startDelta.y);
+			const end = new params.b2Vec2(event.startDelta.x, event.startDelta.y);
 			end.Add(begin);
 		});
 	});
@@ -133,7 +43,7 @@ function main(): void {
  * @param {g.E} obj 中心座標を計算するオブジェクト
  */
 function calcCenter(obj: g.E): box2d.Box2DWeb.Common.Math.b2Vec2 {
-	return physics.vec2(obj.width / 2, obj.height / 2);
+	return params.physics.vec2(obj.width / 2, obj.height / 2);
 }
 
 /**
@@ -141,10 +51,10 @@ function calcCenter(obj: g.E): box2d.Box2DWeb.Common.Math.b2Vec2 {
  * ※ 生成される座標は画面の外枠から 1.0m 内側に限定される
  */
 function randomPosition(): box2d.Box2DWeb.Common.Math.b2Vec2 {
-	const scale = worldProperty.scale;
+	const scale = params.worldProperty.scale;
 	const x = g.game.random.generate() * (g.game.width - scale) + scale;
 	const y = g.game.random.generate() * (g.game.height - scale) + scale;
-	return physics.vec2(x, y);
+	return params.physics.vec2(x, y);
 }
 
 /**
@@ -152,7 +62,7 @@ function randomPosition(): box2d.Box2DWeb.Common.Math.b2Vec2 {
  * @param {g.Scene} scene 描画を行うシーン
  * @param {HajikiParameterObject} parameter 矩形の生成パラメータ
  */
-function createRect(scene: g.Scene, parameter: HajikiParameterObject): box2d.EBody | null {
+function createRect(scene: g.Scene, parameter: params.HajikiParameterObject): box2d.EBody | null {
 	// 表示用の矩形（1m × 1m）を生成
 	const rect = new g.FilledRect({
 		scene: scene,
@@ -163,7 +73,7 @@ function createRect(scene: g.Scene, parameter: HajikiParameterObject): box2d.EBo
 	scene.append(rect);
 
 	// 表示用の矩形と衝突判定を結び付けて返す
-	return physics.createBody(rect, parameter.physics.body, parameter.physics.fixture);
+	return params.physics.createBody(rect, parameter.physics.body, parameter.physics.fixture);
 }
 
 /**
@@ -171,7 +81,7 @@ function createRect(scene: g.Scene, parameter: HajikiParameterObject): box2d.EBo
  * @param {g.Scene} scene 描画を行うシーン
  * @param {HajikiParameterObject} parameter 円の生成パラメータ
  */
-function createCircle(scene: g.Scene, parameter: HajikiParameterObject): box2d.EBody {
+function createCircle(scene: g.Scene, parameter: params.HajikiParameterObject): box2d.EBody {
 	// 画像をまとめる空のエンティティを生成
 	const entity = new g.E({
 		scene: scene,
@@ -216,31 +126,31 @@ function createCircle(scene: g.Scene, parameter: HajikiParameterObject): box2d.E
 	});
 
 	// 表示用の円形と衝突判定を結び付けて返す
-	return physics.createBody(entity, parameter.physics.body, parameter.physics.fixture);
+	return params.physics.createBody(entity, parameter.physics.body, parameter.physics.fixture);
 }
 
 function createWall(scene: g.Scene): void {
 	// 左の壁を生成する
-	const leftWall = createRect(scene, wallParameter);
-	const leftWallPos = physics.vec2(0, 0);
+	const leftWall = createRect(scene, params.wallParameter);
+	const leftWallPos = params.physics.vec2(0, 0);
 	leftWallPos.Add(calcCenter(leftWall.entity));
 	leftWall.b2Body.SetPosition(leftWallPos);
 
 	// 右の壁を生成する
-	const rightWall = createRect(scene, wallParameter);
-	const rightWallPos = physics.vec2(g.game.width - rightWall.entity.width, 0);
+	const rightWall = createRect(scene, params.wallParameter);
+	const rightWallPos = params.physics.vec2(g.game.width - rightWall.entity.width, 0);
 	rightWallPos.Add(calcCenter(rightWall.entity));
 	rightWall.b2Body.SetPosition(rightWallPos);
 
 	// 床を生成する
-	const floor = createRect(scene, floorParameter);
-	const floorPos = physics.vec2(0, g.game.height - floor.entity.height);
+	const floor = createRect(scene, params.floorParameter);
+	const floorPos = params.physics.vec2(0, g.game.height - floor.entity.height);
 	floorPos.Add(calcCenter(floor.entity));
 	floor.b2Body.SetPosition(floorPos);
 
 	// 天井を生成する
-	const ceil = createRect(scene, floorParameter);
-	const ceilPos = physics.vec2(0, 0);
+	const ceil = createRect(scene, params.floorParameter);
+	const ceilPos = params.physics.vec2(0, 0);
 	ceilPos.Add(calcCenter(ceil.entity));
 	ceil.b2Body.SetPosition(ceilPos);
 }
@@ -251,7 +161,7 @@ function createWall(scene: g.Scene): void {
  * @param {b2Vec2} position おはじきを設置する座標
  */
 function createHajiki(scene: g.Scene, position: box2d.Box2DWeb.Common.Math.b2Vec2): void {
-	const hajiki = createCircle(scene, hajikiParameter);
+	const hajiki = createCircle(scene, params.hajikiParameter);
 	hajiki.b2Body.SetPosition(position);
 	hajiki.entity.touchable = true;
 
@@ -273,7 +183,7 @@ function createHajiki(scene: g.Scene, position: box2d.Box2DWeb.Common.Math.b2Vec
 		}
 
 		// おはじきの移動をストップ
-		hajiki.b2Body.SetLinearVelocity(physics.vec2(0, 0));
+		hajiki.b2Body.SetLinearVelocity(params.physics.vec2(0, 0));
 		hajiki.b2Body.SetAngularVelocity(0);
 
 		// タッチした位置の絶対座標を計算する
@@ -283,9 +193,9 @@ function createHajiki(scene: g.Scene, position: box2d.Box2DWeb.Common.Math.b2Vec
 		//    b2Bodyの座標を足すことで絶対座標へと変換する。
 		// ※ 回転の軸をg.Entityの中心にするため、回転の前にタッチ座標から
 		//    中心座標を引いておく。
-		anchor = physics.vec2(event.point.x, event.point.y);
+		anchor = params.physics.vec2(event.point.x, event.point.y);
 		anchor.Subtract(calcCenter(hajiki.entity));
-		anchor.MulM(b2Mat22.FromAngle(hajiki.b2Body.GetAngle()));
+		anchor.MulM(params.b2Mat22.FromAngle(hajiki.b2Body.GetAngle()));
 		anchor.Add(hajiki.b2Body.GetPosition());
 
 		// タッチされた座標に矢印画像を生成
@@ -294,8 +204,8 @@ function createHajiki(scene: g.Scene, position: box2d.Box2DWeb.Common.Math.b2Vec
 			src: scene.asset.getImageById("arrow"),
 			srcWidth: 100,
 			srcHeight: 100,
-			x: anchor.x * worldProperty.scale,
-			y: anchor.y * worldProperty.scale,
+			x: anchor.x * params.worldProperty.scale,
+			y: anchor.y * params.worldProperty.scale,
 			/* アンカーの位置を矢印の先端に設定 */
 			anchorX: 0,
 			anchorY: 0.5,
@@ -307,9 +217,9 @@ function createHajiki(scene: g.Scene, position: box2d.Box2DWeb.Common.Math.b2Vec
 	});
 	hajiki.entity.onPointMove.add((event) => {
 		// pointDownEventからの移動量
-		const delta = physics.vec2(event.startDelta.x, event.startDelta.y);
+		const delta = params.physics.vec2(event.startDelta.x, event.startDelta.y);
 		// 矢印の長さを変更
-		const mouseMovement = delta.Length() * worldProperty.scale;
+		const mouseMovement = delta.Length() * params.worldProperty.scale;
 		arrow.scaleX = mouseMovement / arrow.width;
 		arrow.scaleY = mouseMovement / arrow.height;
 		arrow.angle = Math.atan2(delta.y, delta.x) * (180 / Math.PI);
@@ -317,7 +227,7 @@ function createHajiki(scene: g.Scene, position: box2d.Box2DWeb.Common.Math.b2Vec
 	});
 	hajiki.entity.onPointUp.add((event) => {
 		// pointDownEventからの移動量
-		const delta = physics.vec2(event.startDelta.x, event.startDelta.y);
+		const delta = params.physics.vec2(event.startDelta.x, event.startDelta.y);
 		delta.NegativeSelf();
 		delta.Multiply(power);
 		hajiki.b2Body.ApplyImpulse(delta, anchor);
